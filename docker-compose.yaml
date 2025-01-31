@@ -1,0 +1,58 @@
+version: "3"
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: "jahirraihan22/order_management"
+    container_name: order_management_app
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      APP_MODE: production
+      DB_SERVER: db
+      DB_PORT: 3306
+      DB_NAME: order_management
+      DB_USERNAME: root
+      DB_PASSWORD: root
+    depends_on:
+      - db
+    networks:
+      - app-network
+
+  db:
+    image: mysql:latest
+    container_name: order_management_db
+    restart: unless-stopped
+    tty: true
+    environment:
+      MYSQL_DATABASE: order_management
+      MYSQL_ROOT_PASSWORD: "root"
+      SERVICE_TAGS: dev
+      SERVICE_NAME: mysql
+    volumes:
+      - dbdata:/var/lib/mysql/
+    networks:
+      - app-network
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: order_management_pma
+    depends_on:
+      - db
+    ports:
+      - "8083:80"
+    environment:
+      PMA_HOST: db
+      MYSQL_ROOT_PASSWORD: root
+      PHP_UPLOAD_MAX_FILESIZE: 100MB
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+volumes:
+  dbdata:
+    driver: local
