@@ -4,10 +4,10 @@ import (
 	"github.com/golang-jwt/jwt"
 	"github.com/labstack/echo/v4"
 	"net/http"
-	"order_management/Utility"
 	"order_management/app/http/response"
 	"order_management/app/model"
 	"order_management/config"
+	"order_management/utility"
 	"strings"
 	"time"
 )
@@ -18,7 +18,7 @@ func (js JWTService) CreateJwtTokens(jwtPayload model.JwtPayload) (string, strin
 	var accessTokenPayload = jwt.MapClaims{
 		"Username":  jwtPayload.Username,
 		"Phone":     jwtPayload.Phone,
-		"ExpiresAt": Utility.GetCurrentTimeInDefaultTimezone().Add(config.TokenTTL * time.Second),
+		"ExpiresAt": utility.GetCurrentTimeInDefaultTimezone().Add(config.TokenTTL * time.Second),
 	}
 	jwtAccessToken, jwtError := jwt.NewWithClaims(jwt.SigningMethodHS256, accessTokenPayload).SignedString([]byte(config.JwtSecretKey))
 	if jwtError != nil {
@@ -28,7 +28,7 @@ func (js JWTService) CreateJwtTokens(jwtPayload model.JwtPayload) (string, strin
 	var refreshTokenPayload = jwt.MapClaims{
 		"Username":  jwtPayload.Username,
 		"Phone":     jwtPayload.Phone,
-		"ExpiresAt": Utility.GetCurrentTimeInDefaultTimezone().Add(config.RefreshTokenTTL * time.Second),
+		"ExpiresAt": utility.GetCurrentTimeInDefaultTimezone().Add(config.RefreshTokenTTL * time.Second),
 	}
 	jwtRefreshToken, jwtError := jwt.NewWithClaims(jwt.SigningMethodHS256, refreshTokenPayload).SignedString([]byte(config.JwtSecretKey))
 	if jwtError != nil {
@@ -53,7 +53,7 @@ func (js JWTService) ParseJWTAndSetupInfoInHttpRequest(echoContext echo.Context)
 	jwtPayload := js.ParseJwtPayloadFromClaims(claims)
 	var expiredTime = claims["ExpiresAt"].(string)
 
-	var currentTime = Utility.GetCurrentTimeInDefaultTimezone()
+	var currentTime = utility.GetCurrentTimeInDefaultTimezone()
 	var expirationTime, _ = time.Parse(time.RFC3339Nano, expiredTime)
 
 	expirationTimeIsExpired := currentTime.Before(expirationTime)

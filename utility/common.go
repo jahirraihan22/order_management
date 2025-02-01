@@ -1,4 +1,4 @@
-package Utility
+package utility
 
 import (
 	"order_management/app/http/response"
